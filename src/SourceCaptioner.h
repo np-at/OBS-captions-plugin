@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QObject>
 #include <QTimer>
+#include <utility>
 
 typedef unsigned int uint;
 using namespace std;
@@ -117,9 +118,11 @@ struct TranscriptOutputSettings {
     bool streaming_transcripts_enabled;
     bool recording_transcripts_enabled;
 
-    TranscriptOutputSettings(bool enabled, const string &outputPath, bool streamingOutputEnabled, bool recordingOutputEnabled) : enabled(
-            enabled), output_path(outputPath), streaming_transcripts_enabled(streamingOutputEnabled), recording_transcripts_enabled(
-            recordingOutputEnabled) {}
+    TranscriptOutputSettings(bool enabled, string outputPath, bool streamingOutputEnabled, bool recordingOutputEnabled) : enabled(
+	                                                                                                                          enabled), output_path(
+	                                                                                                                          std::move(
+		                                                                                                                          outputPath)), streaming_transcripts_enabled(streamingOutputEnabled), recording_transcripts_enabled(
+	                                                                                                                          recordingOutputEnabled) {}
 
     bool operator==(const TranscriptOutputSettings &rhs) const {
         return enabled == rhs.enabled &&
@@ -147,7 +150,7 @@ struct SourceCaptionerSettings {
 
     TranscriptOutputSettings transcript_settings;
 
-//    std::map<string, SceneCollectionSettings> scene_collection_settings_map;
+    std::map<string, SceneCollectionSettings> scene_collection_settings_map;
     SceneCollectionSettings scene_collection_settings;
 
     CaptionFormatSettings format_settings;
@@ -158,22 +161,22 @@ struct SourceCaptionerSettings {
     SourceCaptionerSettings(
             bool streaming_output_enabled,
             bool recording_output_enabled,
-            const TranscriptOutputSettings &transcript_settings,
+            TranscriptOutputSettings transcript_settings,
             const CaptionSourceSettings &caption_source_settings,
-            const CaptionFormatSettings &format_settings,
-            const ContinuousCaptionStreamSettings &stream_settings
+            CaptionFormatSettings format_settings,
+            ContinuousCaptionStreamSettings stream_settings
     ) :
             streaming_output_enabled(streaming_output_enabled),
             recording_output_enabled(recording_output_enabled),
-            transcript_settings(transcript_settings),
-            format_settings(format_settings),
-            stream_settings(stream_settings) {}
+            transcript_settings(std::move(transcript_settings)),
+            format_settings(std::move(format_settings)),
+            stream_settings(std::move(stream_settings)) {}
 
     bool operator==(const SourceCaptionerSettings &rhs) const {
         return streaming_output_enabled == rhs.streaming_output_enabled &&
                recording_output_enabled == rhs.recording_output_enabled &&
                transcript_settings == rhs.transcript_settings &&
-               // scene_collection_settings_map == rhs.scene_collection_settings_map &&
+               scene_collection_settings_map == rhs.scene_collection_settings_map &&
                scene_collection_settings == rhs.scene_collection_settings &&
                format_settings == rhs.format_settings &&
                stream_settings == rhs.stream_settings;
@@ -192,12 +195,13 @@ struct SourceCaptionerSettings {
         scene_collection_settings.caption_source_settings.print((string(line_prefix) + "    ").c_str());
         scene_collection_settings.text_output_settings.print((string(line_prefix) + "    ").c_str());
 
-//        printf("%s  Scene Collection Settings: %lu\n", line_prefix, scene_collection_settings_map.size());
-//        for (auto it = scene_collection_settings_map.begin(); it != scene_collection_settings_map.end(); ++it) {
-//            printf("%s   Collection: %s, \n", line_prefix, it->first.c_str());
-//            it->second.caption_source_settings.print((string(line_prefix) + "    ").c_str());
-//            it->second.text_output_settings.print((string(line_prefix) + "    ").c_str());
-//        }
+        //printf("%s  Scene Collection Settings: %lu\n", line_prefix, scene_collection_settings_map.size());
+        for (auto& it : scene_collection_settings_map)
+        {
+            printf("%s   Collection: %s, \n", line_prefix, it.first.c_str());
+            it.second.caption_source_settings.print((string(line_prefix) + "    ").c_str());
+            it.second.text_output_settings.print((string(line_prefix) + "    ").c_str());
+        }
 
         stream_settings.print((string(line_prefix) + "  ").c_str());
         format_settings.print((string(line_prefix) + "  ").c_str());
@@ -232,7 +236,7 @@ struct CaptionOutput {
     bool is_clearance;
 
     CaptionOutput(shared_ptr<OutputCaptionResult> output_result, bool interrupted, bool is_clearance) :
-            output_result(output_result),
+            output_result(std::move(output_result)),
             interrupted(interrupted),
             is_clearance(is_clearance) {};
 
@@ -308,9 +312,10 @@ struct SourceCaptionerStatus {
     bool active;
 
     SourceCaptionerStatus(SourceCaptionerStatusEvent eventType, bool settingsChanged, bool streamSettingsChanged,
-                          const SourceCaptionerSettings &settings, string scene_collection_name,
+                          SourceCaptionerSettings settings, string scene_collection_name,
                           audio_source_capture_status audioCaptureStatus, bool active)
-            : event_type(eventType), settings_changed(settingsChanged), stream_settings_changed(streamSettingsChanged), settings(settings),
+            : event_type(eventType), settings_changed(settingsChanged), stream_settings_changed(streamSettingsChanged), settings(
+	              std::move(settings)),
               scene_collection_name(scene_collection_name), audio_capture_status(audioCaptureStatus), active(active) {}
 };
 

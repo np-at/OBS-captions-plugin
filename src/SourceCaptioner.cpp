@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.c"
 #include "caption_output_writer.h"
 #include "caption_transcript_writer.h"
-
+//#include "obs-text/gdiplus/obs-text.cpp"
 
 void set_text_source_text(const string &text_source_name, const string &caption_text) {
     obs_source_t *text_source = obs_get_source_by_name(text_source_name.c_str());
@@ -220,7 +220,7 @@ bool SourceCaptioner::_start_caption_stream(bool restart_stream) {
             }
         }
 
-        debug_log("caption_settings_equal: %d, %d", caption_settings_equal, continuous_captions != nullptr);
+      //  debug_log("caption_settings_equal: %d, %d", caption_settings_equal, continuous_captions != nullptr);
         if (!continuous_captions || restart_stream) {
             try {
 
@@ -456,7 +456,22 @@ void SourceCaptioner::process_caption_result(const CaptionResult caption_result,
         if (!native_output_result)
             return;
 
+    	//
+    	// TODO: Undo hardcoded
+        const string placeholder_text_source_name = "captions";
         const SceneCollectionSettings &scene_col_settings = this->settings.get_scene_collection_settings(selected_scene_collection_name);
+    	if (scene_col_settings.text_output_settings.enabled && scene_col_settings.text_output_settings.text_source_name.empty())	{
+            debug_log("using placeholder text_source_name");
+            text_source_target_name = placeholder_text_source_name;
+            text_output_result = caption_result_handler->prepare_caption_output(caption_result,
+                true,
+                true,
+                scene_col_settings.text_output_settings.line_length,
+                scene_col_settings.text_output_settings.line_count,
+                results_history);
+    	}
+    	
+        else
         if (scene_col_settings.text_output_settings.enabled
             && !scene_col_settings.text_output_settings.text_source_name.empty()) {
 
@@ -489,6 +504,7 @@ void SourceCaptioner::process_caption_result(const CaptionResult caption_result,
                                  to_transcript_recording,
                                  false);
 
+   
     if (text_output_result && !text_source_target_name.empty()) {
         set_text_source_text(text_source_target_name, text_output_result->output_line);
     }

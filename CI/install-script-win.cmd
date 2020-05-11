@@ -27,7 +27,7 @@ cd build_64
 
 
 cmake.exe ../../ ^
--G "Visual Studio 15 2017 Win64" ^
+-G "Visual Studio 16 2019" -A "Win64" ^
 -DSPEECH_API_GOOGLE_HTTP_OLD=ON ^
 -DOBS_SOURCE_DIR='%DepsBaseOBS%\obs_src\' ^
 -DOBS_LIB_DIR='%DepsBaseOBS%\obs_src\build_64\' ^
@@ -56,7 +56,7 @@ cd build_32
 cd
 
 cmake.exe ../../  ^
--G "Visual Studio 15 2017" ^
+-G "Visual Studio 16 2019" ^
 -DSPEECH_API_GOOGLE_HTTP_OLD=ON ^
 -DOBS_SOURCE_DIR='%DepsBaseOBS%\obs_src\' ^
 -DOBS_LIB_DIR='%DepsBaseOBS%\obs_src\build_32\' ^

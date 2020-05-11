@@ -77,6 +77,9 @@ endif ()
 add_compile_definitions(BUILD_CAPTIONS=1)
 include_directories(${OBS_SOURCE_DIR}/libobs)
 include_directories(${OBS_SOURCE_DIR}/UI/obs-frontend-api/)
+#include_directories(${OBS_SOURCE_DIR}/plugins)
+#include_directories(${OBS_SOURCE_DIR}/plugins/obs-text/)
+
 
 set(obs_google_caption_plugin_SOURCES
         src/ui/MainCaptionWidget.cpp
@@ -176,10 +179,19 @@ if (NOT OBS_FRONTEND_LIBRARY)
     message(FATAL_ERROR "obs_frontend_library not found")
 endif ()
 
+find_library(OBS_PLUGIN_TEXT obs-text
+        ${OBS_LIB_DIR}/plugins/obs-text
+        )
+
+
+if (NOT OBS_PLUGIN_TEXT)
+    message(FATAL_ERROR "OBS_TEXT not found")
+endif ()
 target_link_libraries(obs_google_caption_plugin
         caption_stream
         ${OBS_FRONTEND_LIBRARY}
         ${LIBOBS_LIBRARY}
+        ${OBS_PLUGIN_TEXT}
 
         Qt5::Widgets
         )
