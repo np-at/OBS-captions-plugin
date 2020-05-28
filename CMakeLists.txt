@@ -153,7 +153,7 @@ find_library(LIBOBS_LIBRARY obs
         ${OBS_LIB_DIR}
         ${OBS_LIB_DIR}/libobs/
         ${OBS_LIB_DIR}/libobs/RelWithDebInfo/
-        ${OBS_LIB_DIR}/libobs/Relase/
+        ${OBS_LIB_DIR}/libobs/Release/
         ${OBS_LIB_DIR}/libobs/*/
         )
 
@@ -179,19 +179,19 @@ if (NOT OBS_FRONTEND_LIBRARY)
     message(FATAL_ERROR "obs_frontend_library not found")
 endif ()
 
-find_library(OBS_PLUGIN_TEXT obs-text
-        ${OBS_LIB_DIR}/plugins/obs-text
-        )
-
-
-if (NOT OBS_PLUGIN_TEXT)
-    message(FATAL_ERROR "OBS_TEXT not found")
-endif ()
+#find_library(OBS_PLUGIN_TEXT obs-text
+#        ${OBS_LIB_DIR}/plugins/obs-text
+#        )
+#
+#
+#if (NOT OBS
+#    message(FATAL_ERROR "OBS_TEXT not found")
+#endif ()
 target_link_libraries(obs_google_caption_plugin
         caption_stream
         ${OBS_FRONTEND_LIBRARY}
         ${LIBOBS_LIBRARY}
-        ${OBS_PLUGIN_TEXT}
+#        ${OBS_PLUGIN_TEXT}
 
         Qt5::Widgets
         )

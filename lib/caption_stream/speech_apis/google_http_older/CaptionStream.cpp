@@ -45,7 +45,7 @@ static CaptionResult *parse_caption_obj(const string &msg_obj) {
     if (!result_val.is_array())
         throw string("no result");
 
-    if (!result_val.array_items().size())
+    if (result_val.array_items().empty())
         throw string("empty");
 
     Json result_index_val = json["result_index"];
@@ -110,7 +110,7 @@ CaptionStream::CaptionStream(
 ) : upstream(TcpConnection(GOOGLE, PORTUP)),
     downstream(TcpConnection(GOOGLE, PORTDOWN)),
 
-    settings(settings),
+    settings(std::move(settings)),
 
     session_pair(random_string(15)),
     upstream_thread(nullptr),
@@ -139,7 +139,7 @@ bool CaptionStream::start(std::shared_ptr<CaptionStream> self) {
 
 void CaptionStream::upstream_run(std::shared_ptr<CaptionStream> self) {
     debug_log("starting upstream_run()");
-    _upstream_run(self);
+    _upstream_run(std::move(self));
     stop();
     debug_log("finished upstream_run()");
 }
@@ -306,10 +306,10 @@ void CaptionStream::_downstream_run() {
     if (is_stopped())
         return;
 
-//    debug_log("RESPONSE:\n%s\n", head.c_str());
+    debug_log("RESPONSE:\n%s\n", head.c_str());
 
     string rest = head.substr(newlines_pos + crlf_len + crlf_len, string::npos);
-//    debug_log("rest: '%s'", rest.c_str());
+    debug_log("rest: '%s'", rest.c_str());
 
     unsigned long chunk_length;
 
@@ -404,7 +404,7 @@ bool CaptionStream::queue_audio_data(const char *audio_data, const uint data_siz
     if (is_stopped())
         return false;
 
-    string *str = new string(audio_data, data_size);
+    auto *str = new string(audio_data, data_size);
 
     const int over_limit_cnt = audio_queue.size_approx() - settings.max_queue_depth;
     if (settings.max_queue_depth) {
